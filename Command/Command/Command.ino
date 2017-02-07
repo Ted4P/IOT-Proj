@@ -11,7 +11,7 @@ boolean reading = false;
 ////////////////////////////////////////////////////////////////////////
   byte ip[] = { 192, 168, 0, 2 };   //Manual setup only
   byte gateway[] = { 192, 168, 0, 1 }; //Manual setup only
-  byte subnet[] = { 255, 255, 255, 0 }; //Manual setup only
+  byte subnet[] = { 255, 255, 0, 0 }; //Manual setup only
 
   // if need to change the MAC address (Very Rare)
   byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -35,8 +35,9 @@ void setup(){
 
   //Ethernet.begin(mac);
   Ethernet.begin(mac, ip, gateway, subnet); //for manual setup
-
+  pinMode(LED_BUILTIN, OUTPUT);
   server.begin();
+  
   Serial.println(Ethernet.localIP());
 
 }
@@ -79,36 +80,14 @@ void checkForClient(){
 
            switch (c) {
             case '2':
-              //add code here to trigger on 2
-              triggerPin(2, client);
+              Serial.println("Recieved msg 2");
+              triggerPin(2,client);
+              digitalWrite(LED_BUILTIN, HIGH);
               break;
             case '3':
-            //add code here to trigger on 3
-              triggerPin(3, client);
-              break;
-            case '4':
-            //add code here to trigger on 4
-              triggerPin(4, client);
-              break;
-            case '5':
-            //add code here to trigger on 5
-              triggerPin(5, client);
-              break;
-            case '6':
-            //add code here to trigger on 6
-              triggerPin(6, client);
-              break;
-            case '7':
-            //add code here to trigger on 7
-              triggerPin(7, client);
-              break;
-            case '8':
-            //add code here to trigger on 8
-              triggerPin(8, client);
-              break;
-            case '9':
-            //add code here to trigger on 9
-              triggerPin(9, client);
+              triggerPin(3,client);
+              Serial.println("Recieved msg 3");
+              digitalWrite(LED_BUILTIN, LOW);
               break;
           }
 
@@ -134,10 +113,11 @@ void checkForClient(){
 
 void triggerPin(int pin, EthernetClient client){
 //blink a pin - Client needed just for HTML output purposes.  
-  client.print("Turning on pin ");
+  client.print("Recieved command ");
   client.println(pin);
   client.print("<br>");
 
+  //Do circut stuff
   digitalWrite(pin, HIGH);
   delay(25);
   digitalWrite(pin, LOW);

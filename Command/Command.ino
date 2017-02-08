@@ -43,7 +43,7 @@ void setup(){
 
 void loop(){
 
-  // listen for incoming clients, and process qequest.
+  // listen for incoming clients, and process request.
   checkForClient();
 
 }

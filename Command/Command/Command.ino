@@ -81,13 +81,14 @@ void checkForClient(){
            switch (c) {
             case '2':
               Serial.println("Recieved msg 2");
-              triggerPin(2,client);
-              digitalWrite(LED_BUILTIN, HIGH);
+              //triggerPin(2,client);
+              digitalWrite(2, HIGH);
               break;
             case '3':
-              triggerPin(3,client);
+              //triggerPin(3,client);
               Serial.println("Recieved msg 3");
-              digitalWrite(LED_BUILTIN, LOW);
+              digitalWrite(2, LOW);
+              
               break;
           }
 

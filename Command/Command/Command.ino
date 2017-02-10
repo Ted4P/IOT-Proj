@@ -5,7 +5,7 @@
 #include <Ethernet.h>
 #include <SPI.h>
 boolean reading = false;
-
+String lastCommand = "";
 ////////////////////////////////////////////////////////////////////////
 //CONFIGURE
 ////////////////////////////////////////////////////////////////////////
@@ -46,11 +46,10 @@ void loop(){
 
   // listen for incoming clients, and process qequest.
   checkForClient();
-
+  executeCommand(lastCommand);
 }
 
 void checkForClient(){
-
   EthernetClient client = server.available();
 
   if (client) {
@@ -58,7 +57,6 @@ void checkForClient(){
     // an http request ends with a blank line
     boolean currentLineIsBlank = true;
     boolean sentHeader = false;
-
     while (client.connected()) {
       if (client.available()) {
 
@@ -74,22 +72,11 @@ void checkForClient(){
 
         if(reading && c == ' ') reading = false;
         if(c == '?') reading = true; //found the ?, begin reading the info
-
+        
         if(reading){
           Serial.print(c);
 
-           switch (c) {
-            case 'r':
-              Serial.println("Recieved msg r");
-              makeColor(255,0,0);
-              break;
-            case 'p':
-              //triggerPin(3,client);
-              Serial.println("Recieved msg p");
-              makeColor(255,255,0);
-              break;
-          }
-
+          lastCommand += c;
         }
 
         if (c == '\n' && currentLineIsBlank)  break;
@@ -110,21 +97,43 @@ void checkForClient(){
 
 }
 
+void executeCommand(String command){
+  for(int i=0;i<command.length();i++){
+      char c = command.charAt(i);
+      switch(c){
+            case 'r':
+              Serial.println("Recieved msg r");
+              makeColor(255,0,0);
+              break;
+            case 'p':
+              //triggerPin(3,client);
+              Serial.println("Recieved msg p");
+              makeColor(255,255,0);
+              break;
+            case 'b':
+              makeColor(0,255,0);
+              break;
+            case 'g':
+              makeColor(0,0,255);
+              break;
+            case 'y':
+              makeColor(255,0,255);
+              break;
+            case 'c':
+              makeColor(0,255,255);
+              break;
+            case 'w':
+              makeColor(255,255,255);
+              break;
+          }
+          if((int)c>=48 &&  (int)c<=57){
+            delay(100*((int)c-48));
+          }
+  }
+}
+
 void makeColor(int r, int b, int g){
   analogWrite(A3,r);
   analogWrite(A1,b);
   analogWrite(A2,g);
-}
-
-void triggerPin(int pin, EthernetClient client){
-//blink a pin - Client needed just for HTML output purposes.  
-  client.print("Recieved command ");
-  client.println(pin);
-  client.print("<br>");
-
-  //Do circut stuff
-  digitalWrite(pin, HIGH);
-  delay(25);
-  digitalWrite(pin, LOW);
-  delay(25);
 }

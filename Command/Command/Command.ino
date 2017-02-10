@@ -24,9 +24,9 @@ void setup(){
 
   //Pins 10,11,12 & 13 are used by the ethernet shield
 
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(4, OUTPUT);
+  pinMode(A1, OUTPUT);
+  pinMode(A2, OUTPUT);
+  pinMode(A3, OUTPUT);
   pinMode(5, OUTPUT);
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT);
@@ -79,16 +79,14 @@ void checkForClient(){
           Serial.print(c);
 
            switch (c) {
-            case '2':
-              Serial.println("Recieved msg 2");
-              //triggerPin(2,client);
-              digitalWrite(2, HIGH);
+            case 'r':
+              Serial.println("Recieved msg r");
+              makeColor(255,0,0);
               break;
-            case '3':
+            case 'p':
               //triggerPin(3,client);
-              Serial.println("Recieved msg 3");
-              digitalWrite(2, LOW);
-              
+              Serial.println("Recieved msg p");
+              makeColor(255,255,0);
               break;
           }
 
@@ -110,6 +108,12 @@ void checkForClient(){
 
   } 
 
+}
+
+void makeColor(int r, int b, int g){
+  analogWrite(A3,r);
+  analogWrite(A1,b);
+  analogWrite(A2,g);
 }
 
 void triggerPin(int pin, EthernetClient client){

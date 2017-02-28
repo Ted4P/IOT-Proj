@@ -117,10 +117,10 @@ void executeCommand(String command){
             case 'w':
               makeColor(255,255,255);
               break;
-          }
-          if((int)c>=48 &&  (int)c<=57){  //If time delay, hold
-            delay(100*((int)c-48));
-          }
+      }
+      if((int)c>=48 &&  (int)c<=57){  //If time delay, hold
+          delay(100*((int)c-48));
+      }
   }
 }
 

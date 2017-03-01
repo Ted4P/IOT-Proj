@@ -42,6 +42,7 @@ void loop(){
   // listen for incoming clients, and process request.
   checkForClient();
   executeCommand(lastCommand);
+  lastCommand = "";
 }
 
 void checkForClient(){

@@ -4,7 +4,6 @@
 #include <Ethernet.h>
 #include <SPI.h>
 boolean reading = false;
-String lastCommand = "";
   byte ip[] = { 192, 168, 0, 2 };  
   byte gateway[] = { 192, 168, 0, 1 }; 
   byte subnet[] = { 255, 255, 0, 0 }; 
@@ -41,8 +40,6 @@ void loop(){
 
   // listen for incoming clients, and process request.
   checkForClient();
-  executeCommand(lastCommand);
-  lastCommand = "";
 }
 
 void checkForClient(){
@@ -53,6 +50,7 @@ void checkForClient(){
     // an http request ends with a blank line
     boolean currentLineIsBlank = true;
     boolean sentHeader = false;
+    String lastCommand = "";
     while (client.connected()) {
       if (client.available()) {
 
@@ -85,7 +83,7 @@ void checkForClient(){
 
       }
     }
-
+    executeCommand(lastCommand);
     delay(1); // give the web browser time to receive the data
     client.stop(); // close the connection:
 
@@ -94,7 +92,9 @@ void checkForClient(){
 }
 
 void executeCommand(String command){
+  char lastC='';    //Store the last command to allow a "hold" suffix
   for(int i=0;i<command.length();i++){
+    
       char c = command.charAt(i);
       switch(c){
             case 'r':
@@ -119,9 +119,11 @@ void executeCommand(String command){
               makeColor(255,255,255);
               break;
       }
-      if((int)c>=48 &&  (int)c<=57){  //If time delay, hold
-          delay(100*((int)c-48));
+      if((int)c>=48 &&  (int)c<=57){  //If character code is numeric, convert to int and hold
+          delay((lastC='h')?10:1)*      //If the last character is 'h', hold for 10x longer (e.g. gh5 hold green for 5s);
+                  100*((int)c-48));
       }
+      lastC=c;  //Update last character
   }
 }
 

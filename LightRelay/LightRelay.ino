@@ -8,7 +8,8 @@ String lastCommand = "";
 byte ip[] = {192, 168, 0, 2};  
 byte gateway[] = {192, 168, 0, 1}; 
 byte subnet[] = {255, 255, 0, 0}; 
-int RELAY_DELAY = 500;
+
+
 boolean currentState=false;
 
 //Placeholder MAC, can be replaced with value printed on ethernet shield

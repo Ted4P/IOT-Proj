@@ -8,6 +8,8 @@ String lastCommand = "";
 byte ip[] = {192, 168, 0, 2};  
 byte gateway[] = {192, 168, 0, 1}; 
 byte subnet[] = {255, 255, 0, 0}; 
+int RELAY_DELAY = 500;
+boolean currentState=false;
 
 //Placeholder MAC, can be replaced with value printed on ethernet shield
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -16,7 +18,6 @@ EthernetServer server = EthernetServer(80); //80 = http communication
 void setup(){
   pinMode(7, OUTPUT);  //Set the relay control pin to output mode
 
-  //Ethernet.begin(mac);
   Ethernet.begin(mac, ip, gateway, subnet);
   pinMode(LED_BUILTIN, OUTPUT);
   server.begin();
@@ -113,8 +114,7 @@ void executeCommand(String command){
   }
 }
 
-void toggleRelay(){    //Send analog RGB color values to the pins
-  digitalWrite(7,HIGH);
-  analogWrite(A1,b);
-  analogWrite(A2,g);
+void toggleRelay(){    //Toggle relay on/off
+  digitalWrite(7,currentState?LOW:HIGH);
+  currentState=!currentState;
 }

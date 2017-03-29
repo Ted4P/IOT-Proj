@@ -51,6 +51,7 @@ void checkForClient(){
           client.println("HTTP/1.1 200 OK");
           client.println("Content-Type: text/html");
           client.println();
+          //PUT HTML HERE
           sentHeader = true;
         }
 
@@ -81,38 +82,26 @@ void checkForClient(){
 }
 
 void executeCommand(String command){
-  char lastC='';    //Store the last command to allow a "hold" suffix
   for(int i=0;i<command.length();i++){
       char c = command.charAt(i);
       switch(c){
-            case 'r':
-              makeColor(255,0,0);
+            case 'o':
+              makeOn();
               break;
-            case 'p':
-              makeColor(255,255,0);
+            case 'f':
+              makeOff();
               break;
-            case 'b':
-              makeColor(0,255,0);
+            case 't':
+              toggleRelay();
               break;
-            case 'g':
-              makeColor(0,0,255);
-              break;
-            case 'y':
-              makeColor(255,0,255);
-              break;
-            case 'c':
-              makeColor(0,255,255);
-              break;
-            case 'w':
-              makeColor(255,255,255);
-              break;
-      }
-      if((int)c>=48 &&  (int)c<=57){  //If character code is numeric, convert to int and hold
-          delay((lastC='h')?10:1)*      //If the last character is 'h', hold for 10x longer (e.g. gh5 hold green for 5s);
-                  100*((int)c-48));
-      }
-      lastC=c;  //Update last character
   }
+}
+
+void makeOn(){
+  if(!currentState) toggleRelay();
+}
+void makeOff(){
+  if(currentState) toggleRelay();
 }
 
 void toggleRelay(){    //Toggle relay on/off

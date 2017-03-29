@@ -50,8 +50,7 @@ void checkForClient(){
           //HTTP response header
           client.println("HTTP/1.1 200 OK");
           client.println("Content-Type: text/html");
-          client.println();
-          //PUT HTML HERE
+          client.println("<body><form><input type=\"button\" value=\"On\" onclick=\"window.location.href='http://192.168.0.2/?o'\"/><input type=\"button\" value=\"Off\" onclick=\"window.location.href='http://192.168.0.2/?f'\"/><input type=\"button\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/></form></body>");
           sentHeader = true;
         }
 
@@ -81,22 +80,6 @@ void checkForClient(){
 
 }
 
-void executeCommand(String command){
-  for(int i=0;i<command.length();i++){
-      char c = command.charAt(i);
-      switch(c){
-            case 'o':
-              makeOn();
-              break;
-            case 'f':
-              makeOff();
-              break;
-            case 't':
-              toggleRelay();
-              break;
-  }
-}
-
 void makeOn(){
   if(!currentState) toggleRelay();
 }
@@ -108,3 +91,21 @@ void toggleRelay(){    //Toggle relay on/off
   digitalWrite(7,currentState?LOW:HIGH);
   currentState=!currentState;
 }
+
+void executeCommand(String command){
+    for(int i=0;i<command.length();i++){
+        char c = command.charAt(i);
+        switch(c){
+            case 'o':
+              makeOn();
+              break;
+            case 'f':
+              makeOff();
+              break;
+            case 't':
+              toggleRelay();
+              break;
+        }
+    }
+}
+

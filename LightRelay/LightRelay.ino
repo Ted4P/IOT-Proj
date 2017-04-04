@@ -88,7 +88,7 @@ void makeOff(){
 }
 
 void toggleRelay(){    //Toggle relay on/off
-  digitalWrite(7,currentState?LOW:HIGH);
+  digitalWrite(7,currentState?HIGH:LOW);
   currentState=!currentState;
 }
 

@@ -44,17 +44,6 @@ void checkForClient(){
     lastCommand="";
     while (client.connected()) {
       if (client.available()) {
-
-        if(!sentHeader){
-          //HTTP response header
-          client.println("HTTP/1.1 200 OK");
-          client.println("Content-Type: text/html");
-          
-          sentHeader = true;
-        }
-        //if(sentHeader){
-        //  client.println("<body><form><input type=\"button\" value=\"On\" onclick=\"window.location.href='?o'\"/><input type=\"button\" value=\"Off\" onclick=\"window.location.href='?f'\"/><input type=\"button\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/></form></body>");
-        //}
         char c = client.read();
 
         if(reading && c == ' ') reading = false;
@@ -67,7 +56,27 @@ void checkForClient(){
           executeCommand(lastCommand);
         }
 
-        if (c == '\n' && currentLineIsBlank)  break;  //If 2 /ns are recieved, end the reading phase
+        if (c == '\n' && currentLineIsBlank){
+                    client.println("HTTP/1.1 200 OK");
+                    client.println("Content-Type: text/html");
+                    client.println("Connection: close");
+                    client.println();
+                    // send web page
+                    client.println("<!DOCTYPE html>");
+                    client.println("<html>");
+                    client.println("<head>");
+                    client.println("<title>Arduino Web Page</title>");
+                    client.println("</head>");
+                    client.println("<body>");
+                    client.println("<h1>Hello from Arduino!</h1>");
+                    client.println("<p>A web page from the Arduino server</p>");
+                    client.println("<input type=\"button\" value=\"On\" onclick=\"window.location.href='?o'\"/>");
+                    client.println("<input type=\"button\" value=\"Off\" onclick=\"window.location.href='?f'\"/>");
+                    client.println("<input type=\"button\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/>");
+                    client.println("</body>");
+                    client.println("</html>");
+                    break;  //If 2 /ns are recieved, end the reading phase
+        }
 
         if (c == '\n') {
           currentLineIsBlank = true;

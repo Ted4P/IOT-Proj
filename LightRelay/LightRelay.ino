@@ -31,7 +31,6 @@ void loop(){
 
   // listen for incoming clients, and process request.
   checkForClient();
-  executeCommand(lastCommand);
 }
 
 void checkForClient(){
@@ -65,6 +64,7 @@ void checkForClient(){
           Serial.print(c);
 
           lastCommand += c;
+          executeCommand(lastCommand);
         }
 
         if (c == '\n' && currentLineIsBlank)  break;  //If 2 /ns are recieved, end the reading phase
@@ -78,7 +78,7 @@ void checkForClient(){
     delay(1); // give the web browser time to receive the data
     client.stop(); // close the connection:
 
-  } 
+  }
 
 }
 
@@ -90,7 +90,7 @@ void makeOff(){
 }
 
 void toggleRelay(){    //Toggle relay on/off
-  digitalWrite(7,currentState?HIGH:LOW);
+  digitalWrite(7,currentState?LOW:HIGH);
   currentState=!currentState;
 }
 
@@ -110,4 +110,3 @@ void executeCommand(String command){
         }
     }
 }
-

@@ -50,10 +50,12 @@ void checkForClient(){
           //HTTP response header
           client.println("HTTP/1.1 200 OK");
           client.println("Content-Type: text/html");
-          client.println("<body><form><input type=\"button\" value=\"On\" onclick=\"window.location.href='http://192.168.0.2/?o'\"/><input type=\"button\" value=\"Off\" onclick=\"window.location.href='http://192.168.0.2/?f'\"/><input type=\"button\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/></form></body>");
+          
           sentHeader = true;
         }
-
+        //if(sentHeader){
+        //  client.println("<body><form><input type=\"button\" value=\"On\" onclick=\"window.location.href='?o'\"/><input type=\"button\" value=\"Off\" onclick=\"window.location.href='?f'\"/><input type=\"button\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/></form></body>");
+        //}
         char c = client.read();
 
         if(reading && c == ' ') reading = false;

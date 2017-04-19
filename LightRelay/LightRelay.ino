@@ -52,34 +52,35 @@ void checkForClient(){
         }
 
         if (c == '\n' && currentLineIsBlank){
-                    client.println("HTTP/1.1 200 OK");
-                    client.println("Content-Type: text/html");
-                    client.println("Connection: close");
+                    client.println(F("HTTP/1.1 200 OK"));
+                    client.println(F("Content-Type: text/html"));
+                    client.println(F("Connection: close"));
                     client.println();
                     // send web page
-                    client.println("<!DOCTYPE html>");
-                    client.println("<html>");
-                    client.println("<head>");
-                    client.println("<title>Arduino Web Page</title>");
-                    client.println("</head>");
-                    client.println("<body>");
-                    //if(currentState){
+                    client.println(F("<!DOCTYPE html>"));
+                    client.println(F("<html>"));
+                    client.println(F("<head>"));
+                    client.println(F("<title>Arduino Web Page</title>"));
+                    client.println(F("</head>"));
+                    client.println(F("<body>"));
+                 //   if(currentState){
                         //client.println("<p>");
                         //client.println("<h1>The Heat Rises...</h1>");
                         //client.println("<iframe src=\"//giphy.com/embed/NrqUE766fNTXO\" width=\"480\" height=\"360\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe><p><a href=\"https://giphy.com/gifs/NrqUE766fNTXO\">via GIPHY</a></p>");
                         //client.println("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>");
                         //client.println("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>");
-                   // }
-                   //else{
-                        client.println("</p>");
-                        client.println("<h1>It's Tea Time</h1>");
-                        client.println("<img src=\"https://images-na.ssl-images-amazon.com/images/G/01/aplusautomation/vendorimages/4e14cd59-bc1c-4f0b-8ad4-26cf216c2d5d.jpg._CB290777952_.jpg\" alt = \"image not found\" style=\"width:450px;height:450px;\"><br />");
-                        client.println("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>");
-                        client.println("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>");
+                   //}
+                  // else{
+                        client.println(F("</p>"));
+                        client.println(F("<h1>It's Tea Time</h1>"));
+                        client.println(F("<img src=\"https://images-na.ssl-images-amazon.com/images/G/01/aplusautomation/vendorimages/4e14cd59-bc1c-4f0b-8ad4-26cf216c2d5d.jpg._CB290777952_.jpg\" alt = \"image not found\" style=\"width:450px;height:450px;\"><br />"));
+                        client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>"));
+                        client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>"));
                     //}
-                    client.println("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/>");
-                    client.println("</body>");
-                    client.println("</html>");
+                    client.println(F("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/>"));
+                    //"<form>Select a time:<input type="time" name="usr_time"></form>"
+                    client.println(F("</body>"));
+                    client.println(F("</html>"));
                     break;  //If 2 /ns are recieved, end the reading phase
         }
 

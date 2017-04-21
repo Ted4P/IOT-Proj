@@ -1,13 +1,19 @@
+#include <Time.h>
+#include <TimeLib.h>
+
 
 //Ethernet Library tutorial credit to 
 //http://bildr.org/2011/06/arduino-ethernet-pin-control/
 #include <Ethernet.h>
 #include <SPI.h>
+#include <EthernetUdp.h>
+
 boolean reading = false;
 byte ip[] = {192, 168, 0, 2};  
 byte gateway[] = {192, 168, 0, 1}; 
 byte subnet[] = {255, 255, 0, 0}; 
 
+char timeServer[] = "time.nist.gov"; // time.nist.gov NTP server
 
 boolean currentState=false;
 
@@ -15,20 +21,64 @@ boolean currentState=false;
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 EthernetServer server = EthernetServer(80); //80 = http communication
 
-void setup(){
-  pinMode(7, OUTPUT);  //Set the relay control pin to output mode
-  Ethernet.begin(mac, ip, gateway, subnet);
-  pinMode(LED_BUILTIN, OUTPUT);
-  server.begin();
+//void checkForClient();
+int getNtpTime();
+void sendNTPpacket(char* address);
+
+const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
+byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
+
+// A UDP instance to let us send and receive packets over UDP
+EthernetUDP Udp;
+
+int getNtpTime() {
+  Udp.begin(8888);
+  sendNTPpacket(timeServer); // send an NTP packet to a time server
+  // wait to see if a reply is available
+  delay(1000);
+  if (Udp.parsePacket()) {
+    // We've received a packet, read the data from it
+    Udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
+
+    // the timestamp starts at byte 40 of the received packet and is four bytes,
+    // or two words, long. First, extract the two words:
+
+    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
+    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
+    // combine the four bytes (two words) into a long integer
+    // this is NTP time (seconds since Jan 1 1900):
+    unsigned long secsSince1900 = highWord << 16 | lowWord;
+    const unsigned long seventyYears = 2208988800UL;
+    unsigned long epoch = secsSince1900 - seventyYears;
+    return epoch;
+  }
+  Udp.stop();
 }
 
-void loop(){
+// send an NTP request to the time server at the given address
+void sendNTPpacket(char* address) {
+  // set all bytes in the buffer to 0
+  memset(packetBuffer, 0, NTP_PACKET_SIZE);
+  // Initialize values needed to form NTP request
+  // (see URL above for details on the packets)
+  packetBuffer[0] = 0b11100011;   // LI, Version, Mode
+  packetBuffer[1] = 0;     // Stratum, or type of clock
+  packetBuffer[2] = 6;     // Polling Interval
+  packetBuffer[3] = 0xEC;  // Peer Clock Precision
+  // 8 bytes of zero for Root Delay & Root Dispersion
+  packetBuffer[12]  = 49;
+  packetBuffer[13]  = 0x4E;
+  packetBuffer[14]  = 49;
+  packetBuffer[15]  = 52;
 
-  // listen for incoming clients, and process request.
-  checkForClient();
+  // all NTP fields have been given values, now
+  // you can send a packet requesting a timestamp:
+  Udp.beginPacket(address, 123); //NTP requests are to port 123
+  Udp.write(packetBuffer, NTP_PACKET_SIZE);
+  Udp.endPacket();
 }
 
-void checkForClient(){
+void checkForClient() {
   EthernetClient client = server.available();
 
   if (client) {
@@ -109,15 +159,15 @@ void toggleRelay(){    //Toggle relay on/off
   currentState=!currentState;
 }
 
-void setTime(String timer){ //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
+/*void setTime(String timer){ //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
 
   int timer = hrs*6 + (IS_PM? 120:0) + mins;  //mins = MSD of 2bit minuts str
   EEPROM.update(0,timer);
-}
-int getTime(){// returns time as millis elapsed since midnight
+}*/
+/*int getTime(){// returns time as millis elapsed since midnight
   int val = EEPROM.read(0);
   return val<141?1000*10*val:-1;
-}
+}*/
 
 void executeCommand(String command){
     for(int i=0;i<command.length();i++){
@@ -134,4 +184,23 @@ void executeCommand(String command){
               break;
         }
     }
+}
+
+void setup(){
+  
+  pinMode(7, OUTPUT);  //Set the relay control pin to output mode
+  Ethernet.begin(mac, ip, gateway, subnet);
+  delay(2000);
+  setTime(getNtpTime());
+  delay(2000); 
+  
+  pinMode(LED_BUILTIN, OUTPUT);
+  server.begin();
+}
+
+void loop(){
+
+  // listen for incoming clients, and process request.
+  checkForClient();
+  
 }

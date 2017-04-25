@@ -7,6 +7,7 @@
 #include <Ethernet.h>
 #include <SPI.h>
 #include <EthernetUdp.h>
+#include <EEPROM.h>
 
 boolean reading = false;
 byte ip[] = {192, 168, 0, 2};  
@@ -159,15 +160,14 @@ void toggleRelay(){    //Toggle relay on/off
   currentState=!currentState;
 }
 
-/*void setTime(String timer){ //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
-
-  int timer = hrs*6 + (IS_PM? 120:0) + mins;  //mins = MSD of 2bit minuts str
-  EEPROM.update(0,timer);
-}*/
-/*int getTime(){// returns time as millis elapsed since midnight
+void setTime(String timer){ //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
+  //int newTime = hrs*6 + (IS_PM? 120:0) + mins;  //mins = MSD of 2bit minuts str
+  //EEPROM.update(0,newTime);
+}
+int getTime(){// returns time as millis elapsed since midnight
   int val = EEPROM.read(0);
   return val<141?1000*10*val:-1;
-}*/
+}
 
 void executeCommand(String command){
     for(int i=0;i<command.length();i++){

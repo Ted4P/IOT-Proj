@@ -163,7 +163,7 @@ void toggleRelay(){    //Toggle relay on/off
   currentState=!currentState;
 }
 
-void setTime(String timer){ //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
+void setTimer(String timer){ //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
   int hrs = timer.substring(0,2).toInt();
   int mins = timer.substring(3,4).toInt();
   int newTime = hrs*6 + mins;  //mins = MSD of 2bit minuts str
@@ -177,7 +177,7 @@ int getTime(){// returns time as millis elapsed since midnight
 void executeCommand(String command){
     if(command.length() >= 7 && command.substring(0,6) == "CLOCK="){
         String timerValue = command.substring(6,command.length());
-        setTime(timerValue);
+        setTimer(timerValue);
     }
     else{
       for(int i=0;i<command.length();i++){

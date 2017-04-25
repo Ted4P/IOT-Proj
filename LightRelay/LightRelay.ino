@@ -164,10 +164,11 @@ void toggleRelay(){    //Toggle relay on/off
 }
 
 void setTimer(String timer){ //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
+  if(timer.length() == 5){
   int hrs = timer.substring(0,2).toInt();
   int mins = timer.substring(3,4).toInt();
   int newTime = hrs*6 + mins;  //mins = MSD of 2bit minuts str
-  EEPROM.update(0,newTime);
+  EEPROM.update(0,newTime);}
 }
 int getTime(){// returns time as millis elapsed since midnight
   int val = EEPROM.read(0);

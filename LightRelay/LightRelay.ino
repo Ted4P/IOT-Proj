@@ -128,6 +128,9 @@ void checkForClient() {
                         client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>"));
                         client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>"));
                     //}
+                    client.println(F("<script language=\"JavaScript\">function showInput() {return document.getElementById(\"user_input\").value;}</script>"));
+                    client.println(F("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/>"));
+                    client.println(F("<form>Select a time:<input type=\"time\" name=\"usr_time\" id = \"user_input\"><input type=\"submit\" value = \"Submit\" onclick =\"window.location.href='http://192.168.0.2/?CLOCK='+showInput();\"><br/></form>"));
                     client.println(F("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/>"));
                     //"<form>Select a time:<input type="time" name="usr_time"></form>"
                     client.println(F("</body>"));
@@ -172,7 +175,12 @@ int getTime(){// returns time as millis elapsed since midnight
 }
 
 void executeCommand(String command){
-    for(int i=0;i<command.length();i++){
+    if(command.length() >= 7 && command.substring(0,6) == "CLOCK="){
+        String timerValue = command.substring(6,command.length());
+        setTime(timerValue);
+    }
+    else{
+      for(int i=0;i<command.length();i++){
         char c = command.charAt(i);
         switch(c){
             case 'o':
@@ -184,7 +192,8 @@ void executeCommand(String command){
             case 't':
               toggleRelay();
               break;
-        }
+         }
+      }
     }
 }
 

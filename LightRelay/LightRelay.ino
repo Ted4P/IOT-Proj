@@ -36,7 +36,7 @@ int getNtpTime() {
   Udp.begin(8888);
   sendNTPpacket(timeServer); // send an NTP packet to a time server
   // wait to see if a reply is available
-  delay(1000);
+  delay(2000);
   if (Udp.parsePacket()) {
     // We've received a packet, read the data from it
     Udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
@@ -73,7 +73,7 @@ void sendNTPpacket(char* address) {
   packetBuffer[15]  = 52;
 
   // all NTP fields have been given values, now
-  // you can send a packet requesting a timestamp:
+  // send a packet requesting a timestamp:
   Udp.beginPacket(address, 123); //NTP requests are to port 123
   Udp.write(packetBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
@@ -161,8 +161,10 @@ void toggleRelay(){    //Toggle relay on/off
 }
 
 void setTime(String timer){ //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
-  //int newTime = hrs*6 + (IS_PM? 120:0) + mins;  //mins = MSD of 2bit minuts str
-  //EEPROM.update(0,newTime);
+  int hrs = timer.substring(0,2).toInt();
+  int mins = timer.substring(3,4).toInt();
+  int newTime = hrs*6 + mins;  //mins = MSD of 2bit minuts str
+  EEPROM.update(0,newTime);
 }
 int getTime(){// returns time as millis elapsed since midnight
   int val = EEPROM.read(0);

@@ -92,14 +92,12 @@ void checkForClient() {
       if (client.available()) {
         char c = client.read();
 
-        if(reading && c == ' ') reading = false;
+        if(reading && c == ' '){reading = false;executeCommand(lastCommand);}
         if(c == '?') reading = true; //found the ?, begin reading the info
         
         if(reading){
-          Serial.print(c);
-
           lastCommand += c;
-          executeCommand(lastCommand);
+          
         }
 
         if (c == '\n' && currentLineIsBlank){
@@ -114,24 +112,23 @@ void checkForClient() {
                     client.println(F("<title>Arduino Web Page</title>"));
                     client.println(F("</head>"));
                     client.println(F("<body>"));
-                 //   if(currentState){
-                        //client.println("<p>");
-                        //client.println("<h1>The Heat Rises...</h1>");
-                        //client.println("<iframe src=\"//giphy.com/embed/NrqUE766fNTXO\" width=\"480\" height=\"360\" frameBorder=\"0\" class=\"giphy-embed\" allowFullScreen></iframe><p><a href=\"https://giphy.com/gifs/NrqUE766fNTXO\">via GIPHY</a></p>");
-                        //client.println("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>");
-                        //client.println("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>");
-                   //}
-                  // else{
+                    if(currentState){
+                        client.println(F("<p>"));
+                        client.println(F("<h1>The Heat Rises...</h1>"));
+                        client.println(F("<img src=\"https://images-na.ssl-images-amazon.com/images/G/01/aplusautomation/vendorimages/4e14cd59-bc1c-4f0b-8ad4-26cf216c2d5d.jpg._CB290777952_.jpg\" alt = \"image not found\" style=\"width:450px;height:450px;\"><br />"));
+                        client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>"));
+                        client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>"));
+                  }
+                  else{
                         client.println(F("</p>"));
                         client.println(F("<h1>It's Tea Time</h1>"));
                         client.println(F("<img src=\"https://images-na.ssl-images-amazon.com/images/G/01/aplusautomation/vendorimages/4e14cd59-bc1c-4f0b-8ad4-26cf216c2d5d.jpg._CB290777952_.jpg\" alt = \"image not found\" style=\"width:450px;height:450px;\"><br />"));
                         client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>"));
                         client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>"));
-                    //}
+                    }
                     client.println(F("<script language=\"JavaScript\">function showInput() {return document.getElementById(\"user_input\").value;}</script>"));
                     client.println(F("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/>"));
-                    client.println(F("<form>Select a time:<input type=\"time\" name=\"usr_time\" id = \"user_input\"><input type=\"submit\" value = \"Submit\" onclick =\"window.location.href='http://192.168.0.2/?CLOCK='+showInput();\"><br/></form>"));
-                    client.println(F("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/>"));
+                    client.println(F("<form>Select a time:<input type=\"time\" name=\"CLOCK=\" id = \"user_input\"><input type=\"submit\" value = \"Submit\" onclick =\"window.location.href='http://192.168.0.2/?CLOCK'+showInput();\"><br/></form>"));
                     //"<form>Select a time:<input type="time" name="usr_time"></form>"
                     client.println(F("</body>"));
                     client.println(F("</html>"));
@@ -168,7 +165,12 @@ void setTimer(String timer){ //Timer stores value as ten min increment 0 = 12:00
   int hrs = timer.substring(0,2).toInt();
   int mins = timer.substring(3,4).toInt();
   int newTime = hrs*6 + mins;  //mins = MSD of 2bit minuts str
+  Serial.print("Hours: ");
+  Serial.println(hrs);
+  Serial.print("Minutes: ");
+  Serial.println(mins);
   EEPROM.update(0,newTime);}
+  Serial.println("I've been called");
 }
 int getTime(){// returns time as millis elapsed since midnight
   int val = EEPROM.read(0);
@@ -176,8 +178,16 @@ int getTime(){// returns time as millis elapsed since midnight
 }
 
 void executeCommand(String command){
-    if(command.length() >= 7 && command.substring(0,6) == "CLOCK="){
+    Serial.println(command);
+    if(command.length() >= 7 && command.substring(1,6) == "CLOCK"){
         String timerValue = command.substring(6,command.length());
+        while(timerValue.indexOf('%')>=0){
+          timerValue = timerValue.substring(0,timerValue.indexOf('%'))+timerValue.substring(timerValue.indexOf('%')+3);
+        }
+        timerValue = timerValue.substring(1);
+        Serial.println(timerValue);
+        timerValue = timerValue.substring(0,timerValue.length()-2) + ":" + timerValue.substring(timerValue.length()-2);
+        Serial.println(timerValue);
         setTimer(timerValue);
     }
     else{
@@ -205,7 +215,7 @@ void setup(){
   delay(2000);
   setTime(getNtpTime());
   delay(2000); 
-  
+  Serial.begin(9600);
   pinMode(LED_BUILTIN, OUTPUT);
   server.begin();
 }

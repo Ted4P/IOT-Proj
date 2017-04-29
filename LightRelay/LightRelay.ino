@@ -163,35 +163,26 @@ void toggleRelay(){    //Toggle relay on/off
 void setTimer(String timer){ //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
   if(timer.length() == 5){
   int hrs = timer.substring(0,2).toInt();
-  int mins = timer.substring(3,4).toInt();
-  int newTime = hrs*6 + mins;  //mins = MSD of 2bit minuts str
-  Serial.print("Hours: ");
-  Serial.println(hrs);
-  Serial.print("Minutes: ");
-  Serial.println(mins);
-  EEPROM.update(0,newTime);}
-  Serial.println("I've been called");
   int mins = timer.substring(3,5).toInt();
   EEPROM.update(0,hrs);
   EEPROM.update(1,mins);
   }
 }
-int getTime(){// returns time as millis elapsed since midnight
-  int val = EEPROM.read(0)*10+EEPROM.read(1);
-  return val!=255*255?val:-1;
+long getTime(){// returns time as millis elapsed since midnight
+  long val = EEPROM.read(0)*10+EEPROM.read(1);
+  return val!=((long)255)*255?val:-1;
 }
 
 void executeCommand(String command){
-    Serial.println(command);
     if(command.length() >= 7 && command.substring(1,6) == "CLOCK"){
         String timerValue = command.substring(6,command.length());
         while(timerValue.indexOf('%')>=0){
           timerValue = timerValue.substring(0,timerValue.indexOf('%'))+timerValue.substring(timerValue.indexOf('%')+3);
         }
         timerValue = timerValue.substring(1);
-        Serial.println(timerValue);
         timerValue = timerValue.substring(0,timerValue.length()-2) + ":" + timerValue.substring(timerValue.length()-2);
-        Serial.println(timerValue);
+        if(timerValue.length() == 4)
+          timerValue = "0" + timerValue;
         setTimer(timerValue);
     }
     else{

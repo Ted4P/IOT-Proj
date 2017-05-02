@@ -9,6 +9,8 @@
 #include <EthernetUdp.h>
 #include <EEPROM.h>
 
+long getNtpTime();
+
 boolean reading = false;
 byte ip[] = {10, 3, 108, 250};
 byte gateway[] = {10, 3, 108, 1};
@@ -23,7 +25,6 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 EthernetServer server = EthernetServer(80); //80 = http communication
 
 //void checkForClient();
-int getNtpTime();
 void sendNTPpacket(char* address);
 
 const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
@@ -32,14 +33,12 @@ byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing pack
 // A UDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
 
-int getNtpTime() {
-  Serial.println("CALLED NTP METHOD");
+long getNtpTime() {
   Udp.begin(8888);
   sendNTPpacket(timeServer); // send an NTP packet to a time server
   // wait to see if a reply is available
   delay(2000);
   if (Udp.parsePacket()) {
-    Serial.println("Parsing UDP");
     // We've received a packet, read the data from it
     Udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
 
@@ -56,7 +55,6 @@ int getNtpTime() {
     Serial.println(epoch);
     return epoch;
   }
-  Serial.println("Done with NTP");
   Udp.stop();
 }
 
@@ -78,11 +76,9 @@ void sendNTPpacket(byte* address) {
 
   // all NTP fields have been given values, now
   // send a packet requesting a timestamp:
-  Serial.println("Sending UDP packet");
   Udp.beginPacket(address, 123); //NTP requests are to port 123
   Udp.write(packetBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
-  Serial.println("Sent ntp packet");
 }
 
 void checkForClient() {
@@ -219,7 +215,11 @@ void setup() {
   Ethernet.begin(mac);
   Serial.println(Ethernet.localIP());
   delay(2000);
-  setTime(getNtpTime());
+  long timeNTP  = getNtpTime();
+  Serial.println(timeNTP);
+  setTime(timeNTP);
+  delay(1000);
+  Serial.println(now());
   delay(2000);
 
   pinMode(LED_BUILTIN, OUTPUT);

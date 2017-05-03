@@ -1,22 +1,18 @@
 #include <Time.h>
 #include <TimeLib.h>
-
-
-//Ethernet Library tutorial credit to
-//http://bildr.org/2011/06/arduino-ethernet-pin-control/
 #include <Ethernet.h>
 #include <SPI.h>
 #include <EthernetUdp.h>
 #include <EEPROM.h>
 
-long getNtpTime();
+//long getNtpTime();
 
 boolean reading = false;
 byte ip[] = {10, 3, 108, 250};
 byte gateway[] = {10, 3, 108, 1};
 byte subnet[] = {255, 255, 252, 0};
 
-byte timeServer[] = {129,6,15,30}; // time.nist.gov NTP server
+byte timeServer[] = {129,6,15,30}; // timec.nist.gov NTP server, use IP to avoid DNS issues w/ MX eth network
 
 boolean currentState = false;
 
@@ -25,7 +21,7 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 EthernetServer server = EthernetServer(80); //80 = http communication
 
 //void checkForClient();
-void sendNTPpacket(char* address);
+//void sendNTPpacket(char* address);
 
 const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
 byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
@@ -63,7 +59,7 @@ void sendNTPpacket(byte* address) {
   // set all bytes in the buffer to 0
   memset(packetBuffer, 0, NTP_PACKET_SIZE);
   // Initialize values needed to form NTP request
-  // (see URL above for details on the packets)
+  // This was copied directly from tutorial boilerplate b/c NTP has a bizzare header
   packetBuffer[0] = 0b11100011;   // LI, Version, Mode
   packetBuffer[1] = 0;     // Stratum, or type of clock
   packetBuffer[2] = 6;     // Polling Interval
@@ -76,7 +72,7 @@ void sendNTPpacket(byte* address) {
 
   // all NTP fields have been given values, now
   // send a packet requesting a timestamp:
-  Udp.beginPacket(address, 123); //NTP requests are to port 123
+  Udp.beginPacket(address, 123); //NTP uses port 123
   Udp.write(packetBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
 }

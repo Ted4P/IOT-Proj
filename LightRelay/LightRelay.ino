@@ -1,18 +1,20 @@
 #include <Time.h>
 #include <TimeLib.h>
+
+
+//Ethernet Library tutorial credit to
+//http://bildr.org/2011/06/arduino-ethernet-pin-control/
 #include <Ethernet.h>
 #include <SPI.h>
 #include <EthernetUdp.h>
 #include <EEPROM.h>
-
-//long getNtpTime();
 
 boolean reading = false;
 byte ip[] = {10, 3, 108, 250};
 byte gateway[] = {10, 3, 108, 1};
 byte subnet[] = {255, 255, 252, 0};
 
-byte timeServer[] = {129,6,15,30}; // timec.nist.gov NTP server, use IP to avoid DNS issues w/ MX eth network
+byte timeServer[] = {129,6,15,30}; // time.nist.gov NTP server
 
 boolean currentState = false;
 
@@ -21,7 +23,8 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 EthernetServer server = NULL;
 
 //void checkForClient();
-//void sendNTPpacket(char* address);
+int getNtpTime();
+void sendNTPpacket(char* address);
 
 const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
 byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
@@ -29,12 +32,14 @@ byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing pack
 // A UDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
 
-long getNtpTime() {
+int getNtpTime() {
+  Serial.println("CALLED NTP METHOD");
   Udp.begin(8888);
   sendNTPpacket(timeServer); // send an NTP packet to a time server
   // wait to see if a reply is available
   delay(2000);
   if (Udp.parsePacket()) {
+    Serial.println("Parsing UDP");
     // We've received a packet, read the data from it
     Udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
 
@@ -51,6 +56,7 @@ long getNtpTime() {
     Serial.println(epoch);
     return epoch;
   }
+  Serial.println("Done with NTP");
   Udp.stop();
 }
 
@@ -59,22 +65,24 @@ void sendNTPpacket(byte* address) {
   // set all bytes in the buffer to 0
   memset(packetBuffer, 0, NTP_PACKET_SIZE);
   // Initialize values needed to form NTP request
-  // This was copied directly from tutorial boilerplate b/c NTP has a bizzare header
+  // (see URL above for details on the packets)
   packetBuffer[0] = 0b11100011;   // LI, Version, Mode
   packetBuffer[1] = 0;     // Stratum, or type of clock
   packetBuffer[2] = 6;     // Polling Interval
   packetBuffer[3] = 0xEC;  // Peer Clock Precision
   // 8 bytes of zero for Root Delay & Root Dispersion
-  packetBuffer[12]  = 49;
+  packetBuffer[12]  = 49; 
   packetBuffer[13]  = 0x4E;
   packetBuffer[14]  = 49;
   packetBuffer[15]  = 52;
 
   // all NTP fields have been given values, now
   // send a packet requesting a timestamp:
-  Udp.beginPacket(address, 123); //NTP uses port 123
+  Serial.println("Sending UDP packet");
+  Udp.beginPacket(address, 123); //NTP requests are to port 123
   Udp.write(packetBuffer, NTP_PACKET_SIZE);
   Udp.endPacket();
+  Serial.println("Sent ntp packet");
 }
 
 void checkForClient() {
@@ -100,28 +108,27 @@ void checkForClient() {
           lastCommand += c;
 
         }
-
+        //Sends client the webpage HTML5 code to display web app
         if (c == '\n' && currentLineIsBlank) {
-          client.println(F("HTTP/1.1 200 OK"));
+          client.println(F("HTTP/1.1 200 OK")); //Declares content type and other setup materials
           client.println(F("Content-Type: text/html"));
           client.println(F("Connection: close"));
           client.println();
-          // send web page
-          client.println(F("<!DOCTYPE html>"));
+          client.println(F("<!DOCTYPE html>")); //Declares document type to be HTML5
           client.println(F("<html>"));
           client.println(F("<head>"));
-          client.println(F("<title>Arduino Web Page</title>"));
+          client.println(F("<title>Arduino Web Page</title>"));//Website title
           client.println(F("</head>"));
           client.println(F("<body>"));
-          if (currentState) {
-            client.println(F("<p>"));
+          if (currentState) {//If the kettle is currently set to on...
+            client.println(F("<p>")); //Add a header, images, and some buttons with off set to red to show selection
             client.println(F("<h1>The Heat Rises...</h1>"));
             client.println(F("<img src=\"https://images-na.ssl-images-amazon.com/images/G/01/aplusautomation/vendorimages/4e14cd59-bc1c-4f0b-8ad4-26cf216c2d5d.jpg._CB290777952_.jpg\" alt = \"image not found\" style=\"width:450px;height:450px;\"><br />"));
-            client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>"));
-            client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>"));
+            client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>"));//Send a ping to IP with command 'o' attached at the end
+            client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>"));//Send a ping to IP with command 'f' attached at the end
           }
-          else {
-            client.println(F("</p>"));
+          else {//If the kettle is currently set to off...
+            client.println(F("</p>")); //Add a different header, then images and buttons with off set to red to show selection
             client.println(F("<h1>It's Tea Time</h1>"));
             client.println(F("<img src=\"https://images-na.ssl-images-amazon.com/images/G/01/aplusautomation/vendorimages/4e14cd59-bc1c-4f0b-8ad4-26cf216c2d5d.jpg._CB290777952_.jpg\" alt = \"image not found\" style=\"width:450px;height:450px;\"><br />"));
             client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>"));
@@ -211,11 +218,7 @@ void setup() {
   Ethernet.begin(mac);
   Serial.println(Ethernet.localIP());
   delay(2000);
-  long timeNTP  = getNtpTime();
-  Serial.println(timeNTP);
-  setTime(timeNTP);
-  delay(1000);
-  Serial.println(now());
+  setTime(getNtpTime());
   delay(2000);
   server = EthernetServer(80); //80 = http communication
   

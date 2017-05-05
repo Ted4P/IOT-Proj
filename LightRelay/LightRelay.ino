@@ -135,8 +135,8 @@ void checkForClient() {
             client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>"));
           }
           client.println(F("<script language=\"JavaScript\">function showInput() {return document.getElementById(\"user_input\").value;}</script>"));
-          client.println(F("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='http://192.168.0.2/?t'\"/>"));
-          client.println(F("<form>Select a time:<input type=\"time\" name=\"CLOCK=\" id = \"user_input\"><input type=\"submit\" value = \"Submit\" onclick =\"window.location.href='http://192.168.0.2/?CLOCK'+showInput();\"><br/></form>"));
+          client.println(F("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='/?t'\"/>"));
+          client.println(F("<form>Select a time:<input type=\"time\" name=\"CLOCK=\" id = \"user_input\"><input type=\"submit\" value = \"Submit\" onclick =\"window.location.href='/?CLOCK'+showInput();\"><br/></form>"));
           //"<form>Select a time:<input type="time" name="usr_time"></form>"
           client.println(F("</body>"));
           client.println(F("</html>"));

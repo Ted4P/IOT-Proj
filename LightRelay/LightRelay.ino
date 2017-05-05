@@ -18,7 +18,7 @@ boolean currentState = false;
 
 //Placeholder MAC, can be replaced with value printed on ethernet shield
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-EthernetServer server = EthernetServer(80); //80 = http communication
+EthernetServer server = NULL;
 
 //void checkForClient();
 //void sendNTPpacket(char* address);
@@ -79,7 +79,7 @@ void sendNTPpacket(byte* address) {
 
 void checkForClient() {
   EthernetClient client = server.available();
-
+  
   if (client) {
 
     // an http request ends with a blank line
@@ -217,13 +217,14 @@ void setup() {
   delay(1000);
   Serial.println(now());
   delay(2000);
-
+  server = EthernetServer(80); //80 = http communication
+  
   pinMode(LED_BUILTIN, OUTPUT);
   server.begin();
 }
 
 void loop() {
-
+  Serial.println("IN LOOP");
   // listen for incoming clients, and process request.
   checkForClient();
 
@@ -231,5 +232,6 @@ void loop() {
     makeOn();
     delay(1000 * 60);
   }
+  delay(1000);
 }
 

@@ -16,7 +16,7 @@ byte subnet[] = {255, 255, 252, 0};
 
 byte timeServer[] = {129, 6, 15, 30}; // time.nist.gov NTP server
 
-boolean currentState = false;
+boolean currentState;
 
 //Placeholder MAC, can be replaced with value printed on ethernet shield
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -136,7 +136,35 @@ void checkForClient() {
           }
           client.println(F("<script language=\"JavaScript\">function showInput() {return document.getElementById(\"user_input\").value;}</script>"));
           client.println(F("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='/?t'\"/>"));
-          client.println(F("<form>Select a time:<input type=\"time\" name=\"CLOCK=\" id = \"user_input\"><input type=\"submit\" value = \"Submit\" onclick =\"window.location.href='/?CLOCK'+showInput();\"><br/></form>"));
+          client.println(F("<form>Enter a time (military format):<input type=\"time\" name=\"CLOCK=\" id = \"user_input\"><input type=\"submit\" value = \"Submit\" onclick =\"window.location.href='/?CLOCK'+showInput();\"><br/></form>"));
+          char getTimeParagraph[50];
+          char hourString[10];
+          sprintf(hourString,"%d",((hour()-5)%12)+1);
+          char minString[10];
+          sprintf(minString,"%d",minute());
+          boolean timeIsAM = (hour()-4)<12;
+          char setHourString[10];
+          sprintf(setHourString,"%d",((EEPROM.read(0)-5)%12)+1);
+          char setMinString[10];
+          sprintf(setMinString,"%d",EEPROM.read(1));
+          boolean setTimeIsAM = (EEPROM.read(0)-4<12);
+          strcpy(getTimeParagraph,"<p>The current time is ");
+          strcat(getTimeParagraph,hourString);
+          strcat(getTimeParagraph,":");
+          strcat(getTimeParagraph,minString);
+          strcat(getTimeParagraph, " ");
+          strcat(getTimeParagraph, timeIsAM ? "AM":"PM"); 
+          strcat(getTimeParagraph,"</p>");
+          client.println(getTimeParagraph);
+          char setTimeParagraph[50];
+          strcpy(setTimeParagraph,"<p>The kettle is set to turn on at ");
+          strcat(setTimeParagraph,setHourString);
+          strcat(setTimeParagraph,":");
+          strcat(setTimeParagraph,setMinString);
+          strcat(setTimeParagraph, " ");
+          strcat(setTimeParagraph, setTimeIsAM ? "AM":"PM"); 
+          strcat(setTimeParagraph,"</p>");
+          client.println(setTimeParagraph);
           //"<form>Select a time:<input type="time" name="usr_time"></form>"
           client.println(F("</body>"));
           client.println(F("</html>"));
@@ -164,7 +192,7 @@ void makeOff() {
 }
 
 void toggleRelay() {   //Toggle relay on/off
-  digitalWrite(7, currentState ? LOW : HIGH);
+  digitalWrite(7, currentState ? HIGH : LOW);
   currentState = !currentState;
 }
 
@@ -172,6 +200,7 @@ void setTimer(String timer) { //Timer stores value as ten min increment 0 = 12:0
   if (timer.length() == 5) {
     int hrs = timer.substring(0, 2).toInt();
     int mins = timer.substring(3, 5).toInt();
+    Serial.println(timer);
     EEPROM.update(0, hrs+4);  //Add 4 to account for time zones 
     EEPROM.update(1, mins);
   }
@@ -212,8 +241,9 @@ void executeCommand(String command) {
 }
 
 void setup() {
-
+  currentState = false;
   pinMode(7, OUTPUT);  //Set the relay control pin to output mode
+  digitalWrite(7, HIGH);
   Serial.begin(9600);
   Ethernet.begin(mac);
   Serial.println(Ethernet.localIP());
@@ -221,7 +251,6 @@ void setup() {
   setTime(getNtpTime());
   delay(2000);
   server = EthernetServer(80); //80 = http communication
-
   pinMode(LED_BUILTIN, OUTPUT);
   server.begin();
 }
@@ -232,8 +261,8 @@ void loop() {
 
   if (hour() * 60 + minute() == getTime()) { //If the time is equal
     makeOn();
-    delay(1000 * 60);
+    delay(100 * 60);
   }
-  delay(1000);
+  delay(100);
 }
 

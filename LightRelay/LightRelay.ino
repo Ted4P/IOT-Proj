@@ -69,7 +69,7 @@ void sendNTPpacket(byte* address) {
   // send a packet requesting a timestamp:
   Serial.println("Sending UDP packet");
   Udp.beginPacket(address, 123); //NTP requests are to port 123
-  Udp.write(packetBuffer, NTP_PACKET_SIZE);
+  Udp.write(packetBuffer, NTP_PACKET_SIZE); //Write out data to buffer, will be analyzed in parent method
   Udp.endPacket();
   Serial.println("Sent ntp packet");
 }
@@ -77,9 +77,9 @@ void sendNTPpacket(byte* address) {
 void checkForClient() {
   EthernetClient client = server.available();
 
-  if (client) {
+  if (client) { //If a user has connected to the server
 
-    // an http request ends with a blank line
+    //http request ends with a blank line
     boolean currentLineIsBlank = true;
     boolean sentHeader = false;
     String lastCommand = "";
@@ -123,6 +123,7 @@ void checkForClient() {
             client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"On\" onclick=\"window.location.href='?o'\"/>"));
             client.println(F("<input type=\"button\" style = \"postion: absolute; top: 450; left: (450-75)/2; height: 20px; width: 50px; background-color:red; cursor:pointer\" value=\"Off\" onclick=\"window.location.href='?f'\"/>"));
           }
+          //Build current time, current scheduled time, and time input box and write to webpage
           client.println(F("<script language=\"JavaScript\">function showInput() {return document.getElementById(\"user_input\").value;}</script>"));
           client.println(F("<input type=\"button\" style = \"height: 20px; width: 50px; background-color:white; cursor:pointer\" value=\"Toggle\" onclick=\"window.location.href='/?t'\"/>"));
           client.println(F("<form>Enter a time (military format):<input type=\"time\" name=\"CLOCK=\" id = \"user_input\"><input type=\"submit\" value = \"Submit\" onclick =\"window.location.href='/?CLOCK'+showInput();\"><br/></form>"));
@@ -133,10 +134,10 @@ void checkForClient() {
           sprintf(minString,"%d",minute());
           boolean timeIsAM = (hour()-4)<12;
           char setHourString[10];
-          sprintf(setHourString,"%d",((EEPROM.read(0)-5)%12)+1);
+          sprintf(setHourString,"%d",((EEPROM.read(0)-5)%12)+1);    //Adjust for EST vs GMT
           char setMinString[10];
           sprintf(setMinString,"%d",EEPROM.read(1));
-          boolean setTimeIsAM = (EEPROM.read(0)-4<12);
+          boolean setTimeIsAM = (EEPROM.read(0)-4<12);    //Find if time is AM or PM
           strcpy(getTimeParagraph,"<p>The current time is ");
           strcat(getTimeParagraph,hourString);
           strcat(getTimeParagraph,":");
@@ -145,7 +146,7 @@ void checkForClient() {
           strcat(getTimeParagraph, timeIsAM ? "AM":"PM"); 
           strcat(getTimeParagraph,"</p>");
           client.println(getTimeParagraph);
-          char setTimeParagraph[50];
+          char setTimeParagraph[50];    //Create buffer for text
           strcpy(setTimeParagraph,"<p>The kettle is set to turn on at ");
           strcat(setTimeParagraph,setHourString);
           strcat(setTimeParagraph,":");
@@ -154,7 +155,6 @@ void checkForClient() {
           strcat(setTimeParagraph, setTimeIsAM ? "AM":"PM"); 
           strcat(setTimeParagraph,"</p>");
           client.println(setTimeParagraph);
-          //"<form>Select a time:<input type="time" name="usr_time"></form>"
           client.println(F("</body>"));
           client.println(F("</html>"));
           break;  //If 2 /ns are recieved, end the reading phase
@@ -185,7 +185,7 @@ void toggleRelay() {   //Toggle relay on/off
   currentState = !currentState;
 }
 
-void setTimer(String timer) { //Timer stores value as ten min increment 0 = 12:00AM 143 = 11:50PM
+void setTimer(String timer) { //Timer stores value as hour and minute, with military time
   if (timer.length() == 5) {
     int hrs = timer.substring(0, 2).toInt();
     int mins = timer.substring(3, 5).toInt();
@@ -194,12 +194,12 @@ void setTimer(String timer) { //Timer stores value as ten min increment 0 = 12:0
     EEPROM.update(1, mins);
   }
 }
-long getTime() { // returns time as seconds elapsed since midnight
+long getTime() { // returns time as minutes elapsed since midnight
   long val = EEPROM.read(0) * 60 + EEPROM.read(1);
-  return val != ((long)255) * 255 ? val : -1;
+  return val != ((long)255) * 255 ? val : -1; //If time is unset (EEPROM defaults to 255) return -1, else return time
 }
 
-void executeCommand(String command) {
+void executeCommand(String command) {   //Once a button ahs been clicked, interpret
   if (command.length() >= 7 && command.substring(1, 6) == "CLOCK") {  //Check if the command is to set the clock, and if so, parse the timestamp
     String timerValue = command.substring(6, command.length());
     while (timerValue.indexOf('%') >= 0) {
@@ -232,23 +232,23 @@ void executeCommand(String command) {
 void setup() {
   currentState = false;
   pinMode(7, OUTPUT);  //Set the relay control pin to output mode
-  digitalWrite(7, HIGH);
+  digitalWrite(7, HIGH);    //Turn of relay
   Serial.begin(9600);
-  Ethernet.begin(mac);
+  Ethernet.begin(mac);    //Create server
   Serial.println(Ethernet.localIP());
   delay(2000);
-  setTime(getNtpTime());
+  setTime(getNtpTime());    //Set the time from the NTP server
   delay(2000);
   server = EthernetServer(80); //80 = http communication
   pinMode(LED_BUILTIN, OUTPUT);
-  server.begin();
+  server.begin();   //Start server
 }
 
 void loop() {
   // listen for incoming clients, and process request.
   checkForClient();
 
-  if (hour() * 60 + minute() == getTime()) { //If the time is equal
+  if (hour() * 60 + minute() == getTime()) { //If the current time is equal to the scheduled time, turn kettle on
     makeOn();
     delay(100 * 60);
   }

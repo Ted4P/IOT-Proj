@@ -1,38 +1,29 @@
 #include <Time.h>
 #include <TimeLib.h>
-
-
-//Ethernet Library tutorial credit to
-//http://bildr.org/2011/06/arduino-ethernet-pin-control/
 #include <Ethernet.h>
 #include <SPI.h>
 #include <EthernetUdp.h>
 #include <EEPROM.h>
 
 boolean reading = false;
-byte ip[] = {10, 3, 108, 250};
-byte gateway[] = {10, 3, 108, 1};
-byte subnet[] = {255, 255, 252, 0};
 
 byte timeServer[] = {129, 6, 15, 30}; // time.nist.gov NTP server
 
 boolean currentState;
 
-//Placeholder MAC, can be replaced with value printed on ethernet shield
+//MAC hardware address for Ethernet
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 EthernetServer server = NULL;
 
-//void checkForClient();
-//int getNtpTime();
-void sendNTPpacket(char* address);
+void sendNTPpacket(char* address);  //C++ Method headers
 
 const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
-byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
+byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets for UDP communication
 
 // A UDP instance to let us send and receive packets over UDP
 EthernetUDP Udp;
 
-time_t getNtpTime() {
+time_t getNtpTime() { //Return the NTP time
   Serial.println("CALLED NTP METHOD");
   Udp.begin(8888);
   sendNTPpacket(timeServer); // send an NTP packet to a time server
@@ -40,17 +31,15 @@ time_t getNtpTime() {
   delay(2000);
   if (Udp.parsePacket()) {
     Serial.println("Parsing UDP");
-    // We've received a packet, read the data from it
-    Udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-
-    // the timestamp starts at byte 40 of the received packet and is four bytes,
-    // or two words, long. First, extract the two words:
+    //Received a packet, read the data from it
+    Udp.read(packetBuffer, NTP_PACKET_SIZE); // read packet into the buffer
+    // timestamp starts at byte 40 of the received packet and is four bytes (or two words) long
 
     unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
     unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
     // combine the four bytes (two words) into a long integer
     // this is NTP time (seconds since Jan 1 1900):
-    time_t secsSince1900 = highWord << 16 | lowWord;
+    time_t secsSince1900 = highWord << 16 | lowWord;  //bitshift by 16 then OR the low words, combining into 32 bit datatype
     time_t seventyYears = 2208988800UL;
     time_t epoch = secsSince1900 - seventyYears;
     Serial.println(epoch);
@@ -201,17 +190,17 @@ void setTimer(String timer) { //Timer stores value as ten min increment 0 = 12:0
     int hrs = timer.substring(0, 2).toInt();
     int mins = timer.substring(3, 5).toInt();
     Serial.println(timer);
-    EEPROM.update(0, hrs+4);  //Add 4 to account for time zones 
+    EEPROM.update(0, hrs+4);  //Add 4 to the hour word to account for time zones 
     EEPROM.update(1, mins);
   }
 }
-long getTime() { // returns time as millis elapsed since midnight
+long getTime() { // returns time as seconds elapsed since midnight
   long val = EEPROM.read(0) * 60 + EEPROM.read(1);
   return val != ((long)255) * 255 ? val : -1;
 }
 
 void executeCommand(String command) {
-  if (command.length() >= 7 && command.substring(1, 6) == "CLOCK") {
+  if (command.length() >= 7 && command.substring(1, 6) == "CLOCK") {  //Check if the command is to set the clock, and if so, parse the timestamp
     String timerValue = command.substring(6, command.length());
     while (timerValue.indexOf('%') >= 0) {
       timerValue = timerValue.substring(0, timerValue.indexOf('%')) + timerValue.substring(timerValue.indexOf('%') + 3);
@@ -225,7 +214,7 @@ void executeCommand(String command) {
   else {
     for (int i = 0; i < command.length(); i++) {
       char c = command.charAt(i);
-      switch (c) {
+      switch (c) {  //Change the status based on command issued
         case 'o':
           makeOn();
           break;

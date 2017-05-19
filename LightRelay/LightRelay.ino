@@ -147,7 +147,7 @@ void checkForClient() {
           strcat(getTimeParagraph,"</p>");
           client.println(getTimeParagraph);
           char setTimeParagraph[50];    //Create buffer for text
-          strcpy(setTimeParagraph,"<p>The kettle is set to turn on at ");
+          strcpy(setTimeParagraph,"<p>The kettle is set to turn on at ");   //Build display of time, scheduled time, current time
           strcat(setTimeParagraph,setHourString);
           strcat(setTimeParagraph,":");
           strcat(setTimeParagraph,setMinString);
